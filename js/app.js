@@ -59,6 +59,20 @@ const App = (() => {
     const locationBtn = document.getElementById('location-btn');
     if (locationBtn) locationBtn.addEventListener('click', _onLocationClick);
 
+    // Pincode quick chips
+    const pincodeChips = document.getElementById('pincode-chips-bar');
+    if (pincodeChips) {
+      pincodeChips.addEventListener('click', (e) => {
+        const chip = e.target.closest('.pincode-chip-btn');
+        if (chip) {
+          const pincode = chip.getAttribute('data-pincode');
+          if (pincode) {
+            loadCity(pincode);
+          }
+        }
+      });
+    }
+
     // Unit toggle
     r.unitCelsius.addEventListener('click', () => _setUnit('C'));
     r.unitFahrenheit.addEventListener('click', () => _setUnit('F'));

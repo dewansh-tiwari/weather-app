@@ -14,6 +14,7 @@ const UI = (() => {
       body: document.body,
       html: document.documentElement,
       heroCard: document.getElementById('hero-card'),
+      pincodeInfoSection: document.getElementById('pincode-info-section'),
       detailsGrid: document.getElementById('details-grid'),
       hourlyScroll: document.getElementById('hourly-scroll'),
       dailyList: document.getElementById('daily-list'),
@@ -71,8 +72,11 @@ const UI = (() => {
      ────────────────────────────────────────── */
 
   function renderHero(data, unit) {
-    const { current, city, country } = data;
+    const { current, city, country, pincode, exactPlace, district } = data;
     const isSaved = Storage.isLocationSaved(city);
+
+    // Display title
+    const mainTitle = exactPlace || city;
 
     refs.heroCard.innerHTML = `
       <button class="hero-save-btn ${isSaved ? 'saved' : ''}"
@@ -81,28 +85,122 @@ const UI = (() => {
               title="${isSaved ? 'Remove from saved' : 'Save location'}">
         ${isSaved ? Utils.getIcon('star', 18) : Utils.getIcon('star-outline', 18)}
       </button>
-      <div class="hero-info">
-        <div class="hero-location">
-          <span class="hero-city">${city}</span>
-          <span class="hero-country">• ${data.state ? data.state + ', ' : ''}${country}</span>
-        </div>
-        <div class="hero-datetime">${Utils.formatFullDateTime(current.lastUpdated)}</div>
-        <div class="hero-temp temp-value">${Utils.formatTemp(current.temp, unit)}</div>
-        <div class="hero-condition">${current.condition}</div>
-        <div class="hero-feels-like">Feels like ${Utils.formatTemp(current.feelsLike, unit)}</div>
-        <div class="hero-high-low">
-          <span>↑ H: ${Utils.formatTemp(current.high, unit)}</span>
-          <span>↓ L: ${Utils.formatTemp(current.low, unit)}</span>
-        </div>
+
+      <div class="hero-header-badges">
+        <span class="hero-live-badge">
+          <span class="live-dot"></span> LIVE FORECAST
+        </span>
+        ${pincode ? `<span class="hero-pincode-tag">📮 PIN: ${pincode}</span>` : ''}
       </div>
-      <div class="hero-visual">
-        <div class="hero-weather-icon anim-float">
-          ${Utils.getWeatherIcon(current.condition, current.isDay, 160, 'weather-icon-main')}
+
+      <div class="hero-main-content">
+        <div class="hero-info">
+          <div class="hero-location">
+            <h1 class="hero-city">${mainTitle}</h1>
+            <span class="hero-country">• ${district ? district + ', ' : (data.state ? data.state + ', ' : '')}${country}</span>
+          </div>
+          <div class="hero-datetime">🗓️ ${Utils.formatFullDateTime(current.lastUpdated)}</div>
+
+          <div class="hero-temp-row">
+            <div class="hero-temp temp-value">${Utils.formatTemp(current.temp, unit)}</div>
+            <div class="hero-temp-details">
+              <div class="hero-condition">${current.condition}</div>
+              <div class="hero-feels-like">Feels like <strong>${Utils.formatTemp(current.feelsLike, unit)}</strong></div>
+              <div class="hero-high-low">
+                <span class="hl-high">↑ H: ${Utils.formatTemp(current.high, unit)}</span>
+                <span class="hl-low">↓ L: ${Utils.formatTemp(current.low, unit)}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Embedded Quick Stats Pill Bar -->
+          <div class="hero-quick-stats">
+            <div class="hero-stat-pill">
+              <span class="stat-icon">💧</span>
+              <span class="stat-label">Humidity</span>
+              <span class="stat-val">${current.humidity}%</span>
+            </div>
+            <div class="hero-stat-pill">
+              <span class="stat-icon">💨</span>
+              <span class="stat-label">Wind</span>
+              <span class="stat-val">${current.windSpeed} km/h</span>
+            </div>
+            <div class="hero-stat-pill">
+              <span class="stat-icon">☀️</span>
+              <span class="stat-label">UV Index</span>
+              <span class="stat-val">${current.uvIndex}</span>
+            </div>
+            <div class="hero-stat-pill">
+              <span class="stat-icon">🌧️</span>
+              <span class="stat-label">Rain</span>
+              <span class="stat-val">${current.rainChance}%</span>
+            </div>
+          </div>
         </div>
-        <div class="hero-description">${current.description}</div>
+
+        <div class="hero-visual">
+          <div class="hero-weather-aura" aria-hidden="true"></div>
+          <div class="hero-weather-icon anim-float">
+            ${Utils.getWeatherIcon(current.condition, current.isDay, 180, 'weather-icon-main')}
+          </div>
+          <div class="hero-description">${current.description}</div>
+        </div>
       </div>
     `;
     refs.heroCard.classList.add('anim-fade-in-up');
+  }
+
+  /* ──────────────────────────────────────────
+     INDIAN POSTAL DETAILS CARD
+     ────────────────────────────────────────── */
+
+  function renderPincodeInfo(data) {
+    if (!refs.pincodeInfoSection) return;
+    const { pincode, exactPlace, district, state, country, postOffices } = data;
+
+    if (!pincode) {
+      refs.pincodeInfoSection.style.display = 'none';
+      refs.pincodeInfoSection.innerHTML = '';
+      return;
+    }
+
+    refs.pincodeInfoSection.style.display = 'block';
+    const placeName = exactPlace || data.city;
+    const poTags = (postOffices && postOffices.length > 0)
+      ? postOffices.map(po => `<span class="po-chip">📮 ${po}</span>`).join('')
+      : `<span class="po-chip">📮 ${placeName}</span>`;
+
+    refs.pincodeInfoSection.innerHTML = `
+      <div class="pincode-info-card glass anim-fade-in-up">
+        <div class="pincode-info-header">
+          <div class="pincode-info-title">
+            <span class="pincode-flag">🇮🇳</span>
+            <span>Indian Postal Location Details</span>
+          </div>
+          <span class="pincode-highlight">PIN CODE: ${pincode}</span>
+        </div>
+        <div class="pincode-info-grid">
+          <div class="pincode-info-item">
+            <div class="pincode-info-label">📍 Exact Place / Area Name</div>
+            <div class="pincode-info-value">${placeName}</div>
+          </div>
+          <div class="pincode-info-item">
+            <div class="pincode-info-label">🏛️ District / Division</div>
+            <div class="pincode-info-value">${district || 'Central District'}</div>
+          </div>
+          <div class="pincode-info-item">
+            <div class="pincode-info-label">🗺️ State & Country</div>
+            <div class="pincode-info-value">${state ? state + ', ' : ''}${country || 'India'}</div>
+          </div>
+        </div>
+        ${postOffices && postOffices.length > 0 ? `
+          <div class="pincode-po-list">
+            <div class="pincode-info-label">📫 Post Offices / Sub-Areas Covered Under PIN ${pincode}:</div>
+            <div class="po-chips-container">${poTags}</div>
+          </div>
+        ` : ''}
+      </div>
+    `;
   }
 
   /* ──────────────────────────────────────────
@@ -120,58 +218,77 @@ const UI = (() => {
         label: 'Humidity',
         value: `${current.humidity}%`,
         extra: `Dew point: ${Utils.formatTemp(current.dewPoint, unit)}`,
+        progress: current.humidity,
+        barColor: 'linear-gradient(90deg, #3b82f6, #60a5fa)',
       },
       {
         icon: 'wind',
-        label: 'Wind',
+        label: 'Wind Speed',
         value: `${current.windSpeed} km/h`,
         extra: `Direction: ${windDir} (${current.windDeg}°)`,
+        progress: Math.min(100, (current.windSpeed / 60) * 100),
+        barColor: 'linear-gradient(90deg, #10b981, #34d399)',
       },
       {
         icon: 'pressure',
         label: 'Pressure',
         value: `${current.pressure} hPa`,
-        extra: current.pressure > 1013 ? 'Above normal' : 'Below normal',
+        extra: current.pressure > 1013 ? 'High pressure' : 'Normal / Low',
+        progress: Math.min(100, Math.max(0, ((current.pressure - 970) / 70) * 100)),
+        barColor: 'linear-gradient(90deg, #a855f7, #c084fc)',
       },
       {
         icon: 'visibility',
         label: 'Visibility',
         value: `${current.visibility} km`,
-        extra: current.visibility >= 10 ? 'Excellent' : current.visibility >= 5 ? 'Good' : 'Poor',
+        extra: current.visibility >= 10 ? 'Excellent clarity' : current.visibility >= 5 ? 'Good clarity' : 'Poor visibility',
+        progress: Math.min(100, (current.visibility / 10) * 100),
+        barColor: 'linear-gradient(90deg, #06b6d4, #22d3ee)',
       },
       {
         icon: 'uv',
         label: 'UV Index',
         value: current.uvIndex,
-        extra: `<span style="color: ${uvInfo.color}">${uvInfo.label}</span>`,
+        extra: `<span style="color: ${uvInfo.color}">${uvInfo.label} Risk</span>`,
+        progress: Math.min(100, (current.uvIndex / 11) * 100),
+        barColor: `linear-gradient(90deg, ${uvInfo.color}, #f59e0b)`,
       },
       {
         icon: 'precipitation',
         label: 'Rain Chance',
         value: `${current.rainChance}%`,
-        extra: current.rainChance > 50 ? 'Carry an umbrella' : 'Low probability',
+        extra: current.rainChance > 50 ? 'Carry an umbrella ☔' : 'Low precipitation',
+        progress: current.rainChance,
+        barColor: 'linear-gradient(90deg, #3b82f6, #818cf8)',
       },
       {
         icon: 'sunrise',
         label: 'Sunrise',
         value: Utils.formatTime(current.sunrise),
-        extra: 'Morning golden hour',
+        extra: 'Morning dawn',
+        progress: 100,
+        barColor: 'linear-gradient(90deg, #f59e0b, #fbbf24)',
       },
       {
         icon: 'sunset',
         label: 'Sunset',
         value: Utils.formatTime(current.sunset),
-        extra: 'Evening golden hour',
+        extra: 'Evening dusk',
+        progress: 100,
+        barColor: 'linear-gradient(90deg, #f97316, #ef4444)',
       },
     ];
 
     refs.detailsGrid.innerHTML = details.map((d, i) => `
-      <div class="detail-card" style="animation-delay: ${i * 50}ms">
+      <div class="detail-card glass" style="animation-delay: ${i * 40}ms">
         <div class="detail-card-header">
-          <div class="detail-card-icon">${Utils.getIcon(d.icon, 22)}</div>
+          <div class="detail-card-icon-wrap">${Utils.getIcon(d.icon, 20)}</div>
           <div class="detail-card-label">${d.label}</div>
         </div>
         <div class="detail-card-value">${d.value}</div>
+        <div class="detail-card-bar">
+          <div class="detail-bar-fill" style="width: ${d.progress}%; background: ${d.barColor}"></div>
+        </div>
         <div class="detail-card-extra">${d.extra}</div>
       </div>
     `).join('');
@@ -304,7 +421,7 @@ const UI = (() => {
      ────────────────────────────────────────── */
 
   function renderMap(data) {
-    const { city, lat, lon, current } = data;
+    const { city, pincode, lat, lon, current } = data;
 
     refs.mapContainer.innerHTML = `
       <div class="map-card">
@@ -315,7 +432,7 @@ const UI = (() => {
           <div class="map-marker">
             <div class="map-marker-pin"></div>
             <div class="map-marker-label">
-              ${city} • ${Utils.formatTemp(current.temp, Storage.getUnit())}
+              ${city}${pincode ? ` (${pincode})` : ''} • ${Utils.formatTemp(current.temp, Storage.getUnit())}
             </div>
           </div>
           <div class="map-coords">${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E</div>
@@ -401,16 +518,22 @@ const UI = (() => {
       return;
     }
 
-    refs.autocompleteDropdown.innerHTML = results.map((r, i) => `
-      <div class="autocomplete-item" data-city="${r.city}" data-index="${i}"
-           role="option" tabindex="-1">
-        <div class="city-icon">${Utils.getIcon('location', 18)}</div>
-        <div class="city-info">
-          <div class="city-name">${r.city}</div>
-          <div class="city-country">${r.state ? r.state + ', ' : ''}${r.country}</div>
+    refs.autocompleteDropdown.innerHTML = results.map((r, i) => {
+      const searchTarget = r.pincode || r.city;
+      return `
+        <div class="autocomplete-item" data-city="${searchTarget}" data-index="${i}"
+             role="option" tabindex="-1">
+          <div class="city-icon">${Utils.getIcon('location', 18)}</div>
+          <div class="city-info">
+            <div class="city-name">${r.city}</div>
+            <div class="city-country">
+              ${r.pincode ? `<span class="pincode-badge">📮 PIN: ${r.pincode}</span>` : ''}
+              <span>${r.state ? r.state + ', ' : ''}${r.country}</span>
+            </div>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     refs.autocompleteDropdown.classList.add('visible');
   }
@@ -510,6 +633,7 @@ const UI = (() => {
   function renderAll(data, unit) {
     setWeatherBackground(data.current.condition, data.current.isDay);
     renderHero(data, unit);
+    renderPincodeInfo(data);
     renderDetails(data, unit);
     renderHourly(data, unit);
     renderDaily(data, unit);

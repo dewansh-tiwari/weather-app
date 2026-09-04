@@ -180,6 +180,78 @@
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* ── PINCODE BADGES & SUGGESTION CHIPS ── */
+
+.pincode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+  color: var(--color-primary-light);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  white-space: nowrap;
+}
+
+.hero-pincode-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--color-primary-light);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  margin-left: var(--space-xs);
+}
+
+.pincode-chips-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.pincode-chips-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.pincode-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 1px solid var(--input-border);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.pincode-chip-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--color-primary);
+  color: var(--color-primary-light);
+  transform: translateY(-1px);
 }
 
 /* ── HEADER ACTIONS ─────────────────────────────────────────── */
@@ -327,92 +399,145 @@
   color: var(--text-primary);
 }
 
-/* ── HERO CARD ────────────────────────────────────────────── */
+/* ── HERO CARD (ULTRA MODERN GLASSMORPHIC) ───────────────── */
 
 .hero-section {
   grid-column: 1 / -1;
 }
 
 .hero-card {
-  border-radius: var(--radius-xl);
-  padding: var(--space-2xl) var(--space-xl);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-2xl);
   background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-xl);
+  flex-direction: column;
+  gap: var(--space-lg);
   position: relative;
   overflow: hidden;
-  transition: background var(--transition-slow), border-color var(--transition-slow);
+  transition: background var(--transition-slow), border-color var(--transition-slow), box-shadow var(--transition-slow);
 }
 
 .hero-card::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: var(--weather-gradient);
-  opacity: 0.06;
+  opacity: 0.08;
+  pointer-events: none;
   transition: opacity var(--transition-slow);
 }
 
-.hero-info {
+.hero-header-badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  z-index: 2;
+}
+
+.hero-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.8px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.hero-main-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2xl);
   position: relative;
-  z-index: 1;
+  z-index: 2;
+}
+
+.hero-info {
   flex: 1;
 }
 
 .hero-location {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: var(--space-sm);
-  margin-bottom: var(--space-xs);
+  flex-wrap: wrap;
+  margin-bottom: 2px;
 }
 
 .hero-city {
-  font-size: var(--font-size-2xl);
+  font-family: var(--font-heading);
+  font-size: var(--font-size-4xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
+  line-height: var(--line-height-tight);
 }
 
 .hero-country {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   color: var(--text-secondary);
   font-weight: var(--font-weight-medium);
 }
 
 .hero-datetime {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
   margin-bottom: var(--space-lg);
+  font-weight: var(--font-weight-medium);
+}
+
+.hero-temp-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-xl);
 }
 
 .hero-temp {
+  font-family: var(--font-heading);
   font-size: var(--font-size-6xl);
   font-weight: var(--font-weight-black);
-  color: var(--text-primary);
-  line-height: var(--line-height-tight);
-  letter-spacing: -2px;
-  margin-bottom: var(--space-sm);
+  background: linear-gradient(180deg, var(--text-primary) 0%, rgba(248, 250, 252, 0.75) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 0.95;
+  letter-spacing: -3px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+}
+
+.hero-temp-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
 }
 
 .hero-condition {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
-  margin-bottom: var(--space-xs);
 }
 
 .hero-feels-like {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  margin-bottom: var(--space-md);
 }
 
 .hero-high-low {
@@ -420,71 +545,131 @@
   align-items: center;
   gap: var(--space-md);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
+  margin-top: 4px;
 }
 
-.hero-high-low span {
+.hl-high { color: #f59e0b; }
+.hl-low { color: #60a5fa; }
+
+/* Quick Stats Bar Embedded in Hero */
+.hero-quick-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--divider);
+}
+
+.hero-stat-pill {
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
   display: flex;
   align-items: center;
-  gap: var(--space-2xs);
+  gap: var(--space-xs);
+  transition: all var(--transition-fast);
+}
+
+.hero-stat-pill:hover {
+  background: var(--surface-hover);
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.hero-stat-pill .stat-icon {
+  font-size: 16px;
+}
+
+.hero-stat-pill .stat-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+.hero-stat-pill .stat-val {
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-left: auto;
 }
 
 .hero-visual {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.hero-weather-aura {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--weather-glow, rgba(99, 102, 241, 0.3)) 0%, transparent 70%);
+  filter: blur(25px);
+  pointer-events: none;
 }
 
 .hero-weather-icon {
-  width: 160px;
-  height: 160px;
+  width: 180px;
+  height: 180px;
+  position: relative;
+  z-index: 1;
 }
 
 .hero-weather-icon svg {
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.25));
 }
 
 .hero-description {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   text-align: center;
-  max-width: 200px;
+  max-width: 220px;
   line-height: var(--line-height-relaxed);
+  font-weight: var(--font-weight-medium);
 }
 
 .hero-save-btn {
   position: absolute;
-  top: var(--space-lg);
-  right: var(--space-lg);
-  z-index: 2;
-  width: 36px;
-  height: 36px;
+  top: var(--space-xl);
+  right: var(--space-xl);
+  z-index: 3;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-tertiary);
   background: var(--surface);
+  border: 1px solid var(--glass-border);
   transition: all var(--transition-fast);
 }
 
 .hero-save-btn:hover {
   color: var(--color-accent);
   background: var(--surface-hover);
+  border-color: var(--color-accent);
   transform: scale(1.1);
 }
 
 .hero-save-btn.saved {
   color: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
-/* ── DETAILS GRID ─────────────────────────────────────────── */
+/* ── DETAILS GRID (MODERN METERS) ─────────────────────────── */
 
 .details-section {
   grid-column: 1 / -1;
@@ -498,54 +683,77 @@
 
 .detail-card {
   padding: var(--space-lg);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  transition: background var(--transition-base), border-color var(--transition-base),
-              transform var(--transition-base), box-shadow var(--transition-base);
+  gap: var(--space-xs);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
 }
 
 .detail-card:hover {
   background: var(--surface-hover);
   border-color: var(--glass-border);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-lg);
 }
 
 .detail-card-header {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
 }
 
-.detail-card-icon {
-  width: 24px;
-  height: 24px;
+.detail-card-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-secondary);
-  opacity: 0.8;
+  flex-shrink: 0;
 }
 
 .detail-card-label {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .detail-card-value {
+  font-family: var(--font-heading);
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   line-height: var(--line-height-tight);
+  margin-top: 4px;
+}
+
+.detail-card-bar {
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--divider);
+  overflow: hidden;
+  margin: 6px 0 2px;
+}
+
+.detail-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.8s ease;
 }
 
 .detail-card-extra {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
+  font-weight: var(--font-weight-medium);
 }
 
 /* ── HOURLY FORECAST ──────────────────────────────────────── */
@@ -1253,4 +1461,111 @@
   text-align: center;
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
+}
+
+/* ── INDIAN POSTAL LOCATION CARD ─────────────────────────── */
+
+.pincode-info-section {
+  grid-column: 1 / -1;
+  margin-top: calc(-1 * var(--space-sm));
+}
+
+.pincode-info-card {
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl);
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.pincode-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--divider);
+  padding-bottom: var(--space-sm);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.pincode-info-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.pincode-flag {
+  font-size: var(--font-size-lg);
+}
+
+.pincode-highlight {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.pincode-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+.pincode-info-item {
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+
+.pincode-info-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: 4px;
+}
+
+.pincode-info-value {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.pincode-po-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  border-top: 1px dashed var(--divider);
+  padding-top: var(--space-md);
+}
+
+.po-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: 4px;
+}
+
+.po-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--surface-hover);
+  border: 1px solid var(--glass-border);
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
 }

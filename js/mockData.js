@@ -588,32 +588,81 @@ const MockData = (() => {
   ];
 
   /* ──────────────────────────────────────────
+     MOCK PINCODES (Worldwide pincode map)
+     ────────────────────────────────────────── */
+
+  const MOCK_PINCODES = {
+    '110001': { exactPlace: 'Connaught Place', district: 'Central Delhi', city: 'Connaught Place, Central Delhi', country: 'India', state: 'Delhi', pincode: '110001', postOffices: ['Connaught Place H.O', 'Janpath', 'Parliament Street', 'Pragati Maidan'], lat: 28.6315, lon: 77.2167 },
+    '400001': { exactPlace: 'Fort / Colaba', district: 'Mumbai City', city: 'Fort, Mumbai', country: 'India', state: 'Maharashtra', pincode: '400001', postOffices: ['Mumbai G.P.O.', 'Fort', 'Bazargate', 'Stock Exchange'], lat: 18.9333, lon: 72.8333 },
+    '560001': { exactPlace: 'MG Road / Brigade Road', district: 'Bengaluru Urban', city: 'MG Road, Bengaluru', country: 'India', state: 'Karnataka', pincode: '560001', postOffices: ['Bangalore G.P.O.', 'Museum Road', 'Raj Bhavan'], lat: 12.9750, lon: 77.6083 },
+    '700001': { exactPlace: 'BBD Bagh', district: 'Kolkata', city: 'BBD Bagh, Kolkata', country: 'India', state: 'West Bengal', pincode: '700001', postOffices: ['Kolkata G.P.O.', 'Dalhousie Square', 'Lalbazar'], lat: 22.5726, lon: 88.3510 },
+    '600001': { exactPlace: 'George Town', district: 'Chennai', city: 'George Town, Chennai', country: 'India', state: 'Tamil Nadu', pincode: '600001', postOffices: ['Chennai G.P.O.', 'High Court', 'Muthialpet'], lat: 13.0889, lon: 80.2889 },
+    '500001': { exactPlace: 'Abids / Nampally', district: 'Hyderabad', city: 'Abids, Hyderabad', country: 'India', state: 'Telangana', pincode: '500001', postOffices: ['Hyderabad G.P.O.', 'Abids', 'Gunfoundry'], lat: 17.3850, lon: 78.4867 },
+    '302001': { exactPlace: 'Pink City / Johari Bazaar', district: 'Jaipur', city: 'Pink City, Jaipur', country: 'India', state: 'Rajasthan', pincode: '302001', postOffices: ['Jaipur G.P.O.', 'City Palace', 'Tripolia Bazaar'], lat: 26.9124, lon: 75.7873 },
+    '208001': { exactPlace: 'Civil Lines', district: 'Kanpur Nagar', city: 'Civil Lines, Kanpur', country: 'India', state: 'Uttar Pradesh', pincode: '208001', postOffices: ['Kanpur H.O.', 'Civil Lines', 'Mall Road'], lat: 26.4499, lon: 80.3319 },
+    '110016': { exactPlace: 'Hauz Khas / IIT Delhi', district: 'South Delhi', city: 'Hauz Khas, South Delhi', country: 'India', state: 'Delhi', pincode: '110016', postOffices: ['Hauz Khas', 'IIT Delhi', 'Green Park'], lat: 28.5494, lon: 77.2001 },
+    '400050': { exactPlace: 'Bandra West', district: 'Mumbai Suburban', city: 'Bandra West, Mumbai', country: 'India', state: 'Maharashtra', pincode: '400050', postOffices: ['Bandra West', 'Pali Hill', 'Turner Road'], lat: 19.0596, lon: 72.8295 },
+  };
+
+  /* ──────────────────────────────────────────
      PUBLIC API
      ────────────────────────────────────────── */
 
   function getWeatherData(cityName) {
+    const cleanName = (cityName || '').trim();
+    // Check if pincode direct match
+    const pinKey = Object.keys(MOCK_PINCODES).find(
+      (k) => k.toLowerCase() === cleanName.toLowerCase()
+    );
+    if (pinKey) {
+      const pinData = MOCK_PINCODES[pinKey];
+      const baseData = _generateCityData(pinData);
+      baseData.pincode = pinData.pincode;
+      baseData.exactPlace = pinData.exactPlace;
+      baseData.district = pinData.district;
+      baseData.postOffices = pinData.postOffices;
+      baseData.isIndianPin = true;
+      return baseData;
+    }
+
     const key = Object.keys(CITIES).find(
-      (k) => k.toLowerCase() === cityName.toLowerCase()
+      (k) => k.toLowerCase() === cleanName.toLowerCase()
     );
     if (key) return CITIES[key];
 
     // For cities we don't have hand-crafted static data for, generate realistic dynamic data
     const cityInfo = ALL_CITIES.find(
-      (c) => c.city.toLowerCase() === cityName.toLowerCase()
-    ) || { city: cityName, country: 'India', state: '', lat: 20.5937, lon: 78.9629 };
+      (c) => c.city.toLowerCase() === cleanName.toLowerCase()
+    ) || { city: cleanName, country: 'India', state: '', lat: 20.5937, lon: 78.9629 };
 
     return _generateCityData(cityInfo);
   }
 
   function searchCities(query) {
     if (!query || query.length < 1) return [];
-    const q = query.toLowerCase();
-    return ALL_CITIES.filter(
+    const q = query.trim().toLowerCase();
+
+    // Check pincode matches first
+    const pincodeMatches = Object.values(MOCK_PINCODES).filter(
+      (p) => p.pincode.toLowerCase().includes(q) || p.city.toLowerCase().includes(q)
+    ).map(p => ({
+      city: p.city,
+      country: p.country,
+      state: p.state,
+      pincode: p.pincode,
+      isPincode: true,
+      lat: p.lat,
+      lon: p.lon,
+    }));
+
+    const cityMatches = ALL_CITIES.filter(
       (c) =>
         c.city.toLowerCase().includes(q) ||
         c.country.toLowerCase().includes(q) ||
         c.state.toLowerCase().includes(q)
     ).slice(0, 8);
+
+    return [...pincodeMatches, ...cityMatches].slice(0, 8);
   }
 
   function _generateCityData(cityInfo) {

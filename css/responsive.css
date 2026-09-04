@@ -148,10 +148,29 @@
     align-items: center;
   }
 
+  .hero-main-content {
+    flex-direction: column;
+    gap: var(--space-lg);
+    width: 100%;
+  }
+
+  .hero-temp-row {
+    flex-direction: column;
+    gap: var(--space-xs);
+    align-items: center;
+  }
+
+  .hero-quick-stats {
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+    gap: var(--space-xs);
+  }
+
   .hero-info {
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
   }
 
   .hero-temp {
@@ -159,8 +178,8 @@
   }
 
   .hero-weather-icon {
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     order: -1;
   }
 
