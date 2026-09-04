@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-weather="partly-cloudy">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="SkyCast — A premium, modern weather dashboard. Get real-time weather forecasts, air quality data, hourly and 7-day forecasts for any city worldwide.">
+  <meta name="keywords" content="weather, forecast, temperature, rain, wind, air quality, dashboard">
+  <meta name="author" content="SkyCast Weather">
+  <meta name="theme-color" content="#0b0e1a">
+  <title>SkyCast — Premium Weather Dashboard</title>
+
+  <!-- Favicon (inline SVG data URI) -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%236366f1'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white'%3E⛅%3C/text%3E%3C/svg%3E">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+
+<body>
+
+  <!-- ════════════════════════════════════════
+       TOAST NOTIFICATIONS
+       ════════════════════════════════════════ -->
+  <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ════════════════════════════════════════
+       HEADER
+       ════════════════════════════════════════ -->
+  <header class="header" role="banner">
+    <!-- Logo -->
+    <div class="header-logo">
+      <div class="logo-icon" aria-hidden="true">⛅</div>
+      <span class="logo-text">DewanSky⛅</span>
+    </div>
+
+    <!-- Search -->
+    <div class="search-container">
+      <div class="search-wrapper">
+        <span class="search-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7" />
+            <line x1="16.5" y1="16.5" x2="21" y2="21" stroke-linecap="round" />
+          </svg>
+        </span>
+        <input type="text" class="search-input" id="search-input" placeholder="Search city, state, or country..."
+          autocomplete="off" aria-label="Search for a city" aria-expanded="false" aria-controls="autocomplete-dropdown"
+          role="combobox">
+        <button class="search-btn-location" id="location-btn" aria-label="Use current location" title="Use my location">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9" />
+            <line x1="12" y1="1" x2="12" y2="5" stroke-linecap="round" />
+            <line x1="12" y1="19" x2="12" y2="23" stroke-linecap="round" />
+            <line x1="1" y1="12" x2="5" y2="12" stroke-linecap="round" />
+            <line x1="19" y1="12" x2="23" y2="12" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+      <div class="autocomplete-dropdown" id="autocomplete-dropdown" role="listbox"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="header-actions">
+      <!-- Unit Toggle -->
+      <div class="unit-toggle" role="radiogroup" aria-label="Temperature unit">
+        <button class="unit-toggle-btn active" id="unit-celsius" role="radio" aria-checked="true"
+          aria-label="Celsius">°C</button>
+        <button class="unit-toggle-btn" id="unit-fahrenheit" role="radio" aria-checked="false"
+          aria-label="Fahrenheit">°F</button>
+      </div>
+
+      <!-- Theme Toggle -->
+      <button class="header-btn" id="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle theme">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <circle cx="12" cy="12" r="5" />
+          <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="12" y1="1" x2="12" y2="4" />
+            <line x1="12" y1="20" x2="12" y2="23" />
+            <line x1="1" y1="12" x2="4" y2="12" />
+            <line x1="20" y1="12" x2="23" y2="12" />
+            <line x1="4.2" y1="4.2" x2="6.3" y2="6.3" />
+            <line x1="17.7" y1="17.7" x2="19.8" y2="19.8" />
+            <line x1="4.2" y1="19.8" x2="6.3" y2="17.7" />
+            <line x1="17.7" y1="6.3" x2="19.8" y2="4.2" />
+          </g>
+        </svg>
+      </button>
+
+      <!-- Settings -->
+      <button class="header-btn" id="settings-btn" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ════════════════════════════════════════
+       MAIN CONTENT
+       ════════════════════════════════════════ -->
+  <main class="main-content" id="main-content" role="main">
+
+    <!-- Weather Alerts -->
+    <section class="alerts-section" id="alerts-section" aria-label="Weather alerts"></section>
+
+    <!-- Hero Weather Card -->
+    <section class="hero-section" aria-label="Current weather">
+      <div class="hero-card glass" id="hero-card">
+        <!-- Rendered by JS -->
+        <div class="skeleton skeleton-hero"></div>
+      </div>
+    </section>
+
+    <!-- Weather Details Grid -->
+    <section class="details-section" aria-label="Weather details">
+      <h2 class="section-title">Weather Details</h2>
+      <div class="details-grid stagger-children" id="details-grid">
+        <!-- Rendered by JS -->
+        <div class="skeleton skeleton-detail"></div>
+        <div class="skeleton skeleton-detail"></div>
+        <div class="skeleton skeleton-detail"></div>
+        <div class="skeleton skeleton-detail"></div>
+        <div class="skeleton skeleton-detail"></div>
+        <div class="skeleton skeleton-detail"></div>
+        <div class="skeleton skeleton-detail"></div>
+        <div class="skeleton skeleton-detail"></div>
+      </div>
+    </section>
+
+    <!-- Hourly Forecast -->
+    <section class="hourly-section" aria-label="Hourly forecast">
+      <h2 class="section-title">Hourly Forecast</h2>
+      <div class="hourly-scroll" id="hourly-scroll">
+        <!-- Rendered by JS -->
+        <div class="skeleton-hourly">
+          <div class="skeleton skeleton-hourly-item"></div>
+          <div class="skeleton skeleton-hourly-item"></div>
+          <div class="skeleton skeleton-hourly-item"></div>
+          <div class="skeleton skeleton-hourly-item"></div>
+          <div class="skeleton skeleton-hourly-item"></div>
+          <div class="skeleton skeleton-hourly-item"></div>
+          <div class="skeleton skeleton-hourly-item"></div>
+          <div class="skeleton skeleton-hourly-item"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7-Day Forecast -->
+    <section class="daily-section" aria-label="7-day forecast">
+      <h2 class="section-title">7-Day Forecast</h2>
+      <div id="daily-list">
+        <!-- Rendered by JS -->
+        <div class="skeleton skeleton-card" style="height: 320px;"></div>
+      </div>
+    </section>
+
+    <!-- Temperature Chart -->
+    <section class="chart-section" aria-label="Weather chart">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h2 class="section-title" style="margin-bottom:0">Weather Chart</h2>
+          <div class="chart-tabs" role="tablist" aria-label="Chart data type">
+            <button class="chart-tab active" data-type="temperature" role="tab"
+              aria-selected="true">Temperature</button>
+            <button class="chart-tab" data-type="precipitation" role="tab" aria-selected="false">Precipitation</button>
+            <button class="chart-tab" data-type="wind" role="tab" aria-selected="false">Wind</button>
+          </div>
+        </div>
+        <div class="chart-canvas-container">
+          <canvas id="weather-chart" aria-label="Weather data chart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Air Quality -->
+    <section class="aqi-section" aria-label="Air quality">
+      <h2 class="section-title">Air Quality</h2>
+      <div id="aqi-card">
+        <!-- Rendered by JS -->
+        <div class="skeleton skeleton-card" style="height: 240px;"></div>
+      </div>
+    </section>
+
+    <!-- Location Map -->
+    <section class="map-section" aria-label="Location map">
+      <h2 class="section-title">Location</h2>
+      <div id="map-container">
+        <!-- Rendered by JS -->
+        <div class="skeleton skeleton-card" style="height: 280px;"></div>
+      </div>
+    </section>
+
+    <!-- Saved Locations -->
+    <section class="saved-section" aria-label="Saved locations">
+      <div class="saved-header">
+        <h2 class="section-title" style="margin-bottom:0">Saved Locations</h2>
+      </div>
+      <div class="saved-grid" id="saved-list">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ════════════════════════════════════════
+       SCRIPTS (order matters)
+       ════════════════════════════════════════ -->
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/mockData.js"></script>
+  <script src="js/weatherService.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+
+</html>

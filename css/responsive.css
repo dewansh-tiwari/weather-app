@@ -1,0 +1,384 @@
+/* ============================================================
+   WEATHER APP — Responsive Breakpoints
+   ============================================================ */
+
+/* ── LARGE DESKTOP (1400px+) ─────────────────────────────── */
+@media (min-width: 1400px) {
+  .main-content {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl);
+  }
+}
+
+/* ── DESKTOP (1200px - 1399px) ───────────────────────────── */
+@media (max-width: 1399px) {
+  .main-content {
+    gap: var(--space-lg);
+  }
+}
+
+/* ── TABLET (768px - 1199px) ─────────────────────────────── */
+@media (max-width: 1199px) {
+  :root {
+    --header-height: 64px;
+  }
+
+  .main-content {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+    padding: var(--space-lg) var(--space-md) var(--space-3xl);
+  }
+
+  .details-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .hero-card {
+    padding: var(--space-xl);
+  }
+
+  .hero-temp {
+    font-size: var(--font-size-5xl);
+  }
+
+  .hero-weather-icon {
+    width: 120px;
+    height: 120px;
+  }
+
+  .daily-row {
+    grid-template-columns: 70px 28px 1fr 50px 1fr 45px 45px;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .aqi-section {
+    grid-column: 1;
+  }
+
+  .map-section {
+    grid-column: 2;
+  }
+}
+
+/* ── SMALL TABLET (768px - 899px) ────────────────────────── */
+@media (max-width: 899px) {
+  .details-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .aqi-section,
+  .map-section {
+    grid-column: 1 / -1;
+  }
+
+  .saved-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── MOBILE (< 768px) ────────────────────────────────────── */
+@media (max-width: 767px) {
+  :root {
+    --header-height: 60px;
+  }
+
+  body {
+    padding-bottom: 0;
+  }
+
+  /* Header mobile */
+  .header {
+    padding: 0 var(--space-md);
+    gap: var(--space-sm);
+  }
+
+  .header-logo .logo-text {
+    display: none;
+  }
+
+  .header-logo .logo-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .search-wrapper {
+    height: 40px;
+    padding: 0 var(--space-sm) 0 var(--space-md);
+  }
+
+  .header-actions {
+    gap: 2px;
+  }
+
+  .header-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .unit-toggle-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  /* Main content mobile */
+  .main-content {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-md) var(--space-3xl);
+  }
+
+  .hero-section,
+  .details-section,
+  .hourly-section,
+  .daily-section,
+  .chart-section,
+  .aqi-section,
+  .map-section,
+  .saved-section,
+  .alerts-section {
+    grid-column: 1;
+  }
+
+  /* Hero mobile */
+  .hero-card {
+    flex-direction: column;
+    padding: var(--space-xl) var(--space-lg);
+    text-align: center;
+    align-items: center;
+  }
+
+  .hero-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-temp {
+    font-size: var(--font-size-5xl);
+  }
+
+  .hero-weather-icon {
+    width: 100px;
+    height: 100px;
+    order: -1;
+  }
+
+  .hero-visual {
+    order: -1;
+    margin-bottom: var(--space-md);
+  }
+
+  .hero-location {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .hero-high-low {
+    justify-content: center;
+  }
+
+  .hero-save-btn {
+    top: var(--space-md);
+    right: var(--space-md);
+  }
+
+  /* Details mobile */
+  .details-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+  }
+
+  .detail-card {
+    padding: var(--space-md);
+  }
+
+  .detail-card-value {
+    font-size: var(--font-size-xl);
+  }
+
+  /* Hourly mobile */
+  .hourly-card {
+    width: 72px;
+    padding: var(--space-sm);
+  }
+
+  .hourly-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* Daily mobile */
+  .daily-row {
+    grid-template-columns: 55px 24px 1fr 40px 1fr 40px 40px;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-size-xs);
+  }
+
+  .daily-day {
+    font-size: var(--font-size-xs);
+  }
+
+  .daily-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Chart mobile */
+  .chart-card {
+    padding: var(--space-md);
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .chart-tabs {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .chart-tab {
+    flex: 1;
+    text-align: center;
+  }
+
+  /* AQI mobile */
+  .aqi-pollutants {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
+  }
+
+  /* Map mobile */
+  .map-card {
+    min-height: 220px;
+  }
+
+  .map-container {
+    min-height: 220px;
+  }
+
+  .map-placeholder {
+    min-height: 220px;
+  }
+
+  /* Saved mobile */
+  .saved-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Toast mobile */
+  .toast-container {
+    right: var(--space-md);
+    left: var(--space-md);
+  }
+
+  .toast {
+    min-width: auto;
+  }
+
+  /* Section titles */
+  .section-title {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--space-md);
+  }
+}
+
+/* ── VERY SMALL MOBILE (< 400px) ─────────────────────────── */
+@media (max-width: 399px) {
+  .hero-temp {
+    font-size: var(--font-size-4xl);
+  }
+
+  .hero-city {
+    font-size: var(--font-size-xl);
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xs);
+  }
+
+  .detail-card {
+    padding: var(--space-sm);
+  }
+
+  .detail-card-value {
+    font-size: var(--font-size-lg);
+  }
+
+  .hourly-card {
+    width: 64px;
+  }
+
+  .daily-row {
+    grid-template-columns: 45px 22px 0px 35px 1fr 35px 35px;
+  }
+
+  .daily-condition {
+    display: none;
+  }
+
+  .aqi-pollutants {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── LANDSCAPE MOBILE ─────────────────────────────────────── */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero-card {
+    flex-direction: row;
+    padding: var(--space-lg);
+  }
+
+  .hero-visual {
+    order: unset;
+    margin-bottom: 0;
+  }
+
+  .hero-info {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .hero-temp {
+    font-size: var(--font-size-4xl);
+  }
+
+  .hero-weather-icon {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+/* ── PRINT ────────────────────────────────────────────────── */
+@media print {
+  .header,
+  .search-container,
+  .toast-container,
+  .hero-save-btn,
+  .saved-card-remove,
+  .chart-tabs,
+  .alert-dismiss {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  .card, .glass, .hero-card, .detail-card, .daily-card-wrapper,
+  .chart-card, .aqi-card, .map-card {
+    border: 1px solid #ddd;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .main-content {
+    padding-top: 0;
+  }
+}
