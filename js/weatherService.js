@@ -488,12 +488,21 @@ const WeatherService = (() => {
     };
   }
 
+  function _isMockData() {
+    try {
+      const prefs = Storage.getPreferences();
+      return Boolean(prefs.useMockData) || CONFIG.useMockData;
+    } catch {
+      return CONFIG.useMockData;
+    }
+  }
+
   /* ──────────────────────────────────────────
      PUBLIC: Get Weather by City Name or Pincode
      ────────────────────────────────────────── */
 
   async function getWeatherByCity(cityName) {
-    if (CONFIG.useMockData) {
+    if (_isMockData()) {
       await _simulateDelay(300);
       return MockData.getWeatherData(cityName);
     }
@@ -548,7 +557,7 @@ const WeatherService = (() => {
      ────────────────────────────────────────── */
 
   async function getWeatherByCoords(lat, lon, cityInfo = null) {
-    if (CONFIG.useMockData) {
+    if (_isMockData()) {
       await _simulateDelay(300);
       const nearest = MockData.ALL_CITIES.reduce((best, city) => {
         const dist = Math.sqrt((city.lat - lat) ** 2 + (city.lon - lon) ** 2);

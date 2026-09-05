@@ -22,23 +22,45 @@ const App = (() => {
      INITIALIZATION
      ────────────────────────────────────────── */
 
-  function init() {
+  async function init() {
     // Cache DOM references
     UI.cacheRefs();
 
     // Load user preferences
-    state.unit = Storage.getUnit();
-    state.theme = Storage.getTheme();
-    state.currentCity = Storage.getLastCity() || 'New Delhi';
+    const prefs = Storage.getPreferences();
+    state.unit = prefs.unit;
+    state.theme = prefs.theme;
 
     // Apply preferences
     UI.setTheme(state.theme);
     UI.setUnit(state.unit);
+    UI.applyAnimationsToggle(prefs.enableAnimations !== false);
+
+    // Audio preferences
+    AudioEngine.setVolume(prefs.soundVolume !== undefined ? prefs.soundVolume : 0.5);
+    AudioEngine.setCueEnabled(prefs.playAudioCue !== false);
+    AudioEngine.setMuted(!prefs.enableSound);
+    UI.updateSoundButtonState(Boolean(prefs.enableSound));
 
     // Bind events
     _bindEvents();
 
-    // Load initial weather
+    // Determine initial city based on defaultLocationMode preference
+    if (prefs.defaultLocationMode === 'current') {
+      try {
+        const coords = await WeatherService.getCurrentLocation();
+        await loadCoords(coords.lat, coords.lon);
+        return;
+      } catch (e) {
+        console.warn('Startup geolocation failed, falling back to last city:', e.message);
+      }
+    } else if (prefs.defaultLocationMode === 'custom' && prefs.customDefaultCity) {
+      state.currentCity = prefs.customDefaultCity;
+      loadCity(state.currentCity);
+      return;
+    }
+
+    state.currentCity = Storage.getLastCity() || 'New Delhi';
     loadCity(state.currentCity);
   }
 
@@ -80,6 +102,52 @@ const App = (() => {
     // Theme toggle
     r.themeToggle.addEventListener('click', _toggleTheme);
 
+    // Sound toggle
+    if (r.soundToggle) {
+      r.soundToggle.addEventListener('click', _toggleSound);
+    }
+
+    // Settings Modal Events
+    if (r.settingsBtn) r.settingsBtn.addEventListener('click', _openSettings);
+    if (r.settingsCloseBtn) r.settingsCloseBtn.addEventListener('click', _closeSettings);
+    if (r.settingsCancelBtn) r.settingsCancelBtn.addEventListener('click', _closeSettings);
+    if (r.settingsModalBackdrop) {
+      r.settingsModalBackdrop.addEventListener('click', (e) => {
+        if (e.target === r.settingsModalBackdrop) _closeSettings();
+      });
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && r.settingsModalBackdrop && r.settingsModalBackdrop.classList.contains('open')) {
+        _closeSettings();
+      }
+    });
+
+    if (r.settingsSaveBtn) r.settingsSaveBtn.addEventListener('click', _saveSettings);
+    if (r.settingsResetDefaultsBtn) r.settingsResetDefaultsBtn.addEventListener('click', _resetSettings);
+    if (r.settingClearSavedBtn) r.settingClearSavedBtn.addEventListener('click', _clearSavedLocations);
+
+    if (r.settingUnitTemp) {
+      r.settingUnitTemp.addEventListener('click', (e) => {
+        const btn = e.target.closest('.segment-btn');
+        if (btn) {
+          r.settingUnitTemp.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        }
+      });
+    }
+
+    if (r.settingSoundVolume) {
+      r.settingSoundVolume.addEventListener('input', (e) => {
+        if (r.settingVolumeValue) r.settingVolumeValue.textContent = `${e.target.value}%`;
+      });
+    }
+
+    if (r.settingDefaultLocationMode) {
+      r.settingDefaultLocationMode.addEventListener('change', (e) => {
+        UI.updateCustomCityVisibility(e.target.value);
+      });
+    }
+
     // Delegated events on main content
     document.getElementById('main-content').addEventListener('click', _onMainClick);
 
@@ -116,6 +184,10 @@ const App = (() => {
 
       UI.renderAll(data, state.unit);
 
+      // Audio engine update soundscape & indication cue
+      AudioEngine.playWeatherSound(data.current.condition, data.current.isDay);
+      AudioEngine.playAudioCue(data.current.condition);
+
       // Initialize chart
       ChartEngine.init('weather-chart');
       ChartEngine.setData(data.hourly, state.unit);
@@ -145,6 +217,11 @@ const App = (() => {
       Storage.setLastCity(data.city);
 
       UI.renderAll(data, state.unit);
+
+      // Audio engine update soundscape & indication cue
+      AudioEngine.playWeatherSound(data.current.condition, data.current.isDay);
+      AudioEngine.playAudioCue(data.current.condition);
+
       ChartEngine.init('weather-chart');
       ChartEngine.setData(data.hourly, state.unit);
       _bindChartTabs();
@@ -283,6 +360,108 @@ const App = (() => {
 
     // Redraw chart for theme change
     setTimeout(() => ChartEngine.redraw(), 100);
+  }
+
+  function _toggleSound() {
+    const isMuted = AudioEngine.toggleMute();
+    const isEnabled = !isMuted;
+    Storage.savePreferences({ enableSound: isEnabled });
+    UI.updateSoundButtonState(isEnabled);
+
+    if (isEnabled && state.currentData) {
+      AudioEngine.playWeatherSound(state.currentData.current.condition, state.currentData.current.isDay);
+      AudioEngine.playAudioCue(state.currentData.current.condition);
+      UI.showToast(`🔊 Sound Effects Active: ${state.currentData.current.condition}`, 'info');
+    } else {
+      UI.showToast('🔇 Sound Effects Muted', 'info');
+    }
+  }
+
+  /* ──────────────────────────────────────────
+     SETTINGS MODAL HANDLERS
+     ────────────────────────────────────────── */
+
+  function _openSettings() {
+    const prefs = Storage.getPreferences();
+    const savedCount = Storage.getSavedLocations().length;
+    UI.openSettingsModal(prefs, savedCount);
+  }
+
+  function _closeSettings() {
+    UI.closeSettingsModal();
+  }
+
+  function _saveSettings() {
+    const newPrefs = UI.getSettingsFormData();
+    Storage.savePreferences(newPrefs);
+
+    state.unit = newPrefs.unit;
+    state.theme = newPrefs.theme;
+
+    UI.setUnit(newPrefs.unit);
+    UI.setTheme(newPrefs.theme);
+    UI.applyAnimationsToggle(newPrefs.enableAnimations);
+
+    // Audio preferences
+    AudioEngine.setVolume(newPrefs.soundVolume);
+    AudioEngine.setCueEnabled(newPrefs.playAudioCue);
+    AudioEngine.setMuted(!newPrefs.enableSound);
+    UI.updateSoundButtonState(newPrefs.enableSound);
+
+    if (newPrefs.enableSound && state.currentData) {
+      AudioEngine.playWeatherSound(state.currentData.current.condition, state.currentData.current.isDay);
+    }
+
+    UI.closeSettingsModal();
+
+    // Re-render weather if data loaded
+    if (state.currentData) {
+      UI.renderAll(state.currentData, state.unit);
+      ChartEngine.setData(state.currentData.hourly, state.unit);
+      _bindChartTabs();
+    }
+
+    UI.showToast('Settings saved successfully!', 'success');
+  }
+
+  function _resetSettings() {
+    if (confirm('Are you sure you want to reset all settings to default?')) {
+      const defaultPrefs = Storage.resetPreferences();
+      state.unit = defaultPrefs.unit;
+      state.theme = defaultPrefs.theme;
+
+      UI.setUnit(defaultPrefs.unit);
+      UI.setTheme(defaultPrefs.theme);
+      UI.applyAnimationsToggle(defaultPrefs.enableAnimations);
+
+      AudioEngine.setVolume(defaultPrefs.soundVolume);
+      AudioEngine.setCueEnabled(defaultPrefs.playAudioCue);
+      AudioEngine.setMuted(!defaultPrefs.enableSound);
+      UI.updateSoundButtonState(defaultPrefs.enableSound);
+
+      UI.populateSettingsForm(defaultPrefs, Storage.getSavedLocations().length);
+
+      if (state.currentData) {
+        UI.renderAll(state.currentData, state.unit);
+        ChartEngine.setData(state.currentData.hourly, state.unit);
+        _bindChartTabs();
+      }
+
+      UI.showToast('Settings reset to defaults.', 'info');
+    }
+  }
+
+  function _clearSavedLocations() {
+    if (confirm('Clear all saved locations?')) {
+      Storage.clearSavedLocations();
+      UI.renderSavedLocations(state.unit);
+      if (state.currentData) {
+        UI.renderHero(state.currentData, state.unit);
+      }
+      const countElem = document.getElementById('saved-locations-count');
+      if (countElem) countElem.textContent = '0';
+      UI.showToast('All saved locations cleared.', 'info');
+    }
   }
 
   /* ──────────────────────────────────────────

@@ -28,6 +28,44 @@ const Utils = (() => {
     return Math.round(value);
   }
 
+  function formatWindSpeed(speedKmH, unit = 'km/h') {
+    const val = Number(speedKmH) || 0;
+    switch (unit) {
+      case 'm/s':
+        return `${(val / 3.6).toFixed(1)} m/s`;
+      case 'mph':
+        return `${Math.round(val * 0.621371)} mph`;
+      case 'knots':
+        return `${Math.round(val * 0.539957)} kts`;
+      case 'km/h':
+      default:
+        return `${Math.round(val)} km/h`;
+    }
+  }
+
+  function formatPressure(hPa, unit = 'hPa') {
+    const val = Number(hPa) || 1013;
+    switch (unit) {
+      case 'mbar':
+        return `${Math.round(val)} mbar`;
+      case 'mmHg':
+        return `${Math.round(val * 0.750062)} mmHg`;
+      case 'inHg':
+        return `${(val * 0.02953).toFixed(2)} inHg`;
+      case 'hPa':
+      default:
+        return `${Math.round(val)} hPa`;
+    }
+  }
+
+  function formatPrecip(amount, unit = 'mm') {
+    const val = Number(amount) || 0;
+    if (unit === 'in') {
+      return `${(val / 25.4).toFixed(2)} in`;
+    }
+    return `${val} mm`;
+  }
+
   /* ──────────────────────────────────────────
      DATE / TIME FORMATTING
      ────────────────────────────────────────── */
@@ -443,6 +481,9 @@ const Utils = (() => {
     fahrenheitToCelsius,
     formatTemp,
     formatTempValue,
+    formatWindSpeed,
+    formatPressure,
+    formatPrecip,
     formatTime,
     formatTimeShort,
     formatDate,

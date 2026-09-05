@@ -16,8 +16,19 @@ const Storage = (() => {
       { city: 'London', country: 'United Kingdom', lat: 51.5074, lon: -0.1278 },
     ],
     preferences: {
-      unit: 'C',        // 'C' or 'F'
-      theme: 'dark',    // 'dark' or 'light'
+      unit: 'C',                 // 'C' or 'F'
+      windUnit: 'km/h',         // 'km/h', 'm/s', 'mph', 'knots'
+      pressureUnit: 'hPa',     // 'hPa', 'mbar', 'mmHg', 'inHg'
+      precipUnit: 'mm',         // 'mm', 'in'
+      theme: 'dark',            // 'dark', 'light', 'auto'
+      enableAnimations: true,   // boolean
+      showAlerts: true,         // boolean
+      enableSound: false,       // boolean (sound active)
+      playAudioCue: true,       // boolean (audio chime on city load)
+      soundVolume: 0.5,         // number (0.0 to 1.0)
+      defaultLocationMode: 'last', // 'last', 'current', 'custom'
+      customDefaultCity: 'New Delhi',
+      useMockData: false,       // boolean
     },
     lastCity: 'New Delhi',
   };
@@ -66,6 +77,11 @@ const Storage = (() => {
     return locations;
   }
 
+  function clearSavedLocations() {
+    _set(KEYS.SAVED_LOCATIONS, []);
+    return [];
+  }
+
   function isLocationSaved(cityName) {
     return getSavedLocations().some(
       (loc) => loc.city.toLowerCase() === cityName.toLowerCase()
@@ -75,12 +91,20 @@ const Storage = (() => {
   /* ── Preferences ── */
 
   function getPreferences() {
-    return _get(KEYS.PREFERENCES, DEFAULTS.preferences);
+    const stored = _get(KEYS.PREFERENCES, {});
+    return { ...DEFAULTS.preferences, ...stored };
   }
 
   function savePreferences(prefs) {
     const current = getPreferences();
-    _set(KEYS.PREFERENCES, { ...current, ...prefs });
+    const updated = { ...current, ...prefs };
+    _set(KEYS.PREFERENCES, updated);
+    return updated;
+  }
+
+  function resetPreferences() {
+    _set(KEYS.PREFERENCES, DEFAULTS.preferences);
+    return { ...DEFAULTS.preferences };
   }
 
   function getUnit() {
@@ -111,12 +135,15 @@ const Storage = (() => {
 
   /* ── Public API ── */
   return {
+    DEFAULTS,
     getSavedLocations,
     saveLocation,
     removeLocation,
+    clearSavedLocations,
     isLocationSaved,
     getPreferences,
     savePreferences,
+    resetPreferences,
     getUnit,
     setUnit,
     getTheme,

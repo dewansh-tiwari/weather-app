@@ -28,6 +28,31 @@ const UI = (() => {
       unitCelsius: document.getElementById('unit-celsius'),
       unitFahrenheit: document.getElementById('unit-fahrenheit'),
       themeToggle: document.getElementById('theme-toggle'),
+      settingsBtn: document.getElementById('settings-btn'),
+      settingsModalBackdrop: document.getElementById('settings-modal-backdrop'),
+      settingsModal: document.getElementById('settings-modal'),
+      settingsCloseBtn: document.getElementById('settings-close-btn'),
+      settingsSaveBtn: document.getElementById('settings-save-btn'),
+      settingsCancelBtn: document.getElementById('settings-cancel-btn'),
+      settingsResetDefaultsBtn: document.getElementById('setting-reset-defaults-btn'),
+      settingClearSavedBtn: document.getElementById('setting-clear-saved-btn'),
+      settingUnitTemp: document.getElementById('setting-unit-temp'),
+      settingUnitWind: document.getElementById('setting-unit-wind'),
+      settingUnitPressure: document.getElementById('setting-unit-pressure'),
+      settingUnitPrecip: document.getElementById('setting-unit-precip'),
+      settingTheme: document.getElementById('setting-theme'),
+      settingToggleAnimations: document.getElementById('setting-toggle-animations'),
+      settingToggleAlerts: document.getElementById('setting-toggle-alerts'),
+      soundToggle: document.getElementById('sound-toggle'),
+      settingToggleSound: document.getElementById('setting-toggle-sound'),
+      settingToggleAudioCue: document.getElementById('setting-toggle-audio-cue'),
+      settingSoundVolume: document.getElementById('setting-sound-volume'),
+      settingVolumeValue: document.getElementById('setting-volume-value'),
+      settingDefaultLocationMode: document.getElementById('setting-default-location-mode'),
+      settingCustomCityWrapper: document.getElementById('setting-custom-city-wrapper'),
+      settingCustomDefaultCity: document.getElementById('setting-custom-default-city'),
+      settingDataMode: document.getElementById('setting-data-mode'),
+      savedLocationsCount: document.getElementById('saved-locations-count'),
       mainContent: document.getElementById('main-content'),
     };
   }
@@ -37,13 +62,18 @@ const UI = (() => {
      ────────────────────────────────────────── */
 
   function setTheme(theme) {
-    refs.html.setAttribute('data-theme', theme);
+    let activeTheme = theme;
+    if (theme === 'auto') {
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      activeTheme = prefersDark ? 'dark' : 'light';
+    }
+    refs.html.setAttribute('data-theme', activeTheme);
     const themeIcon = refs.themeToggle;
     if (themeIcon) {
-      themeIcon.innerHTML = theme === 'dark'
+      themeIcon.innerHTML = activeTheme === 'dark'
         ? Utils.getIcon('sun-theme', 20)
         : Utils.getIcon('moon', 20);
-      themeIcon.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+      themeIcon.setAttribute('aria-label', activeTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
     }
   }
 
@@ -74,6 +104,8 @@ const UI = (() => {
   function renderHero(data, unit) {
     const { current, city, country, pincode, exactPlace, district } = data;
     const isSaved = Storage.isLocationSaved(city);
+    const prefs = Storage.getPreferences();
+    const formattedWind = Utils.formatWindSpeed(current.windSpeed, prefs.windUnit);
 
     // Display title
     const mainTitle = exactPlace || city;
@@ -123,7 +155,7 @@ const UI = (() => {
             <div class="hero-stat-pill">
               <span class="stat-icon">💨</span>
               <span class="stat-label">Wind</span>
-              <span class="stat-val">${current.windSpeed} km/h</span>
+              <span class="stat-val">${formattedWind}</span>
             </div>
             <div class="hero-stat-pill">
               <span class="stat-icon">☀️</span>
@@ -209,8 +241,11 @@ const UI = (() => {
 
   function renderDetails(data, unit) {
     const { current } = data;
+    const prefs = Storage.getPreferences();
     const uvInfo = Utils.getUVLevel(current.uvIndex);
     const windDir = Utils.getWindDirection(current.windDeg);
+    const formattedWind = Utils.formatWindSpeed(current.windSpeed, prefs.windUnit);
+    const formattedPressure = Utils.formatPressure(current.pressure, prefs.pressureUnit);
 
     const details = [
       {
@@ -224,7 +259,7 @@ const UI = (() => {
       {
         icon: 'wind',
         label: 'Wind Speed',
-        value: `${current.windSpeed} km/h`,
+        value: formattedWind,
         extra: `Direction: ${windDir} (${current.windDeg}°)`,
         progress: Math.min(100, (current.windSpeed / 60) * 100),
         barColor: 'linear-gradient(90deg, #10b981, #34d399)',
@@ -232,7 +267,7 @@ const UI = (() => {
       {
         icon: 'pressure',
         label: 'Pressure',
-        value: `${current.pressure} hPa`,
+        value: formattedPressure,
         extra: current.pressure > 1013 ? 'High pressure' : 'Normal / Low',
         progress: Math.min(100, Math.max(0, ((current.pressure - 970) / 70) * 100)),
         barColor: 'linear-gradient(90deg, #a855f7, #c084fc)',
@@ -488,8 +523,9 @@ const UI = (() => {
 
   function renderAlerts(data) {
     const { alerts } = data;
+    const prefs = Storage.getPreferences();
 
-    if (!alerts || alerts.length === 0) {
+    if (!prefs.showAlerts || !alerts || alerts.length === 0) {
       refs.alertsSection.innerHTML = '';
       return;
     }
@@ -627,10 +663,114 @@ const UI = (() => {
   }
 
   /* ──────────────────────────────────────────
+     SETTINGS MODAL CONTROLLER
+     ────────────────────────────────────────── */
+
+  function openSettingsModal(prefs, savedCount = 0) {
+    populateSettingsForm(prefs, savedCount);
+    if (refs.settingsModalBackdrop) {
+      refs.settingsModalBackdrop.classList.add('open');
+      refs.settingsModalBackdrop.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  function closeSettingsModal() {
+    if (refs.settingsModalBackdrop) {
+      refs.settingsModalBackdrop.classList.remove('open');
+      refs.settingsModalBackdrop.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  function updateCustomCityVisibility(mode) {
+    if (refs.settingCustomCityWrapper) {
+      refs.settingCustomCityWrapper.style.display = mode === 'custom' ? 'flex' : 'none';
+    }
+  }
+
+  function updateSoundButtonState(isSoundActive) {
+    if (refs.soundToggle) {
+      refs.soundToggle.classList.toggle('sound-active', isSoundActive);
+      refs.soundToggle.classList.toggle('sound-muted', !isSoundActive);
+      refs.soundToggle.setAttribute('aria-label', isSoundActive ? 'Mute weather sound effects' : 'Unmute weather sound effects');
+      refs.soundToggle.setAttribute('title', isSoundActive ? 'Mute sound effects' : 'Enable sound effects');
+    }
+  }
+
+  function populateSettingsForm(prefs, savedCount = 0) {
+    if (refs.savedLocationsCount) {
+      refs.savedLocationsCount.textContent = savedCount;
+    }
+
+    if (refs.settingUnitTemp) {
+      const buttons = refs.settingUnitTemp.querySelectorAll('.segment-btn');
+      buttons.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-value') === prefs.unit);
+      });
+    }
+
+    if (refs.settingUnitWind) refs.settingUnitWind.value = prefs.windUnit || 'km/h';
+    if (refs.settingUnitPressure) refs.settingUnitPressure.value = prefs.pressureUnit || 'hPa';
+    if (refs.settingUnitPrecip) refs.settingUnitPrecip.value = prefs.precipUnit || 'mm';
+    if (refs.settingTheme) refs.settingTheme.value = prefs.theme || 'dark';
+    if (refs.settingToggleAnimations) refs.settingToggleAnimations.checked = prefs.enableAnimations !== false;
+    if (refs.settingToggleAlerts) refs.settingToggleAlerts.checked = prefs.showAlerts !== false;
+    if (refs.settingToggleSound) refs.settingToggleSound.checked = Boolean(prefs.enableSound);
+    if (refs.settingToggleAudioCue) refs.settingToggleAudioCue.checked = prefs.playAudioCue !== false;
+    if (refs.settingSoundVolume) {
+      const volPct = Math.round((prefs.soundVolume !== undefined ? prefs.soundVolume : 0.5) * 100);
+      refs.settingSoundVolume.value = volPct;
+      if (refs.settingVolumeValue) refs.settingVolumeValue.textContent = `${volPct}%`;
+    }
+    if (refs.settingDefaultLocationMode) {
+      refs.settingDefaultLocationMode.value = prefs.defaultLocationMode || 'last';
+      updateCustomCityVisibility(refs.settingDefaultLocationMode.value);
+    }
+    if (refs.settingCustomDefaultCity) refs.settingCustomDefaultCity.value = prefs.customDefaultCity || '';
+    if (refs.settingDataMode) refs.settingDataMode.value = prefs.useMockData ? 'mock' : 'live';
+  }
+
+  function getSettingsFormData() {
+    let tempUnit = 'C';
+    if (refs.settingUnitTemp) {
+      const activeBtn = refs.settingUnitTemp.querySelector('.segment-btn.active');
+      if (activeBtn) tempUnit = activeBtn.getAttribute('data-value');
+    }
+
+    return {
+      unit: tempUnit,
+      windUnit: refs.settingUnitWind ? refs.settingUnitWind.value : 'km/h',
+      pressureUnit: refs.settingUnitPressure ? refs.settingUnitPressure.value : 'hPa',
+      precipUnit: refs.settingUnitPrecip ? refs.settingUnitPrecip.value : 'mm',
+      theme: refs.settingTheme ? refs.settingTheme.value : 'dark',
+      enableAnimations: refs.settingToggleAnimations ? refs.settingToggleAnimations.checked : true,
+      showAlerts: refs.settingToggleAlerts ? refs.settingToggleAlerts.checked : true,
+      enableSound: refs.settingToggleSound ? refs.settingToggleSound.checked : false,
+      playAudioCue: refs.settingToggleAudioCue ? refs.settingToggleAudioCue.checked : true,
+      soundVolume: refs.settingSoundVolume ? (Number(refs.settingSoundVolume.value) / 100) : 0.5,
+      defaultLocationMode: refs.settingDefaultLocationMode ? refs.settingDefaultLocationMode.value : 'last',
+      customDefaultCity: refs.settingCustomDefaultCity ? refs.settingCustomDefaultCity.value.trim() : '',
+      useMockData: refs.settingDataMode ? refs.settingDataMode.value === 'mock' : false,
+    };
+  }
+
+  function applyAnimationsToggle(enable) {
+    const orbContainer = document.querySelector('.ambient-mesh-glow');
+    if (orbContainer) {
+      orbContainer.style.display = enable ? 'block' : 'none';
+    }
+    if (refs.body) {
+      refs.body.classList.toggle('disable-animations', !enable);
+    }
+  }
+
+  /* ──────────────────────────────────────────
      RENDER ALL
      ────────────────────────────────────────── */
 
   function renderAll(data, unit) {
+    const prefs = Storage.getPreferences();
+    applyAnimationsToggle(prefs.enableAnimations !== false);
+    setTheme(prefs.theme);
     setWeatherBackground(data.current.condition, data.current.isDay);
     renderHero(data, unit);
     renderPincodeInfo(data);
@@ -662,6 +802,13 @@ const UI = (() => {
     showLoading,
     showError,
     showToast,
+    openSettingsModal,
+    closeSettingsModal,
+    populateSettingsForm,
+    getSettingsFormData,
+    updateCustomCityVisibility,
+    applyAnimationsToggle,
+    updateSoundButtonState,
     renderAll,
     refs: () => refs,
   };
