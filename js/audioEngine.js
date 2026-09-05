@@ -460,9 +460,10 @@ const AudioEngine = (() => {
   }
 
   function setVolume(vol) {
-    masterVolume = Math.max(0, Math.min(1, Number(vol) || 0.5));
-    if (masterGain && audioCtx && !isMuted) {
-      masterGain.gain.setValueAtTime(masterVolume, audioCtx.currentTime);
+    const parsed = Number(vol);
+    masterVolume = Math.max(0, Math.min(1, isNaN(parsed) ? 0.5 : parsed));
+    if (masterGain && audioCtx) {
+      masterGain.gain.setValueAtTime(isMuted ? 0 : masterVolume, audioCtx.currentTime);
     }
   }
 

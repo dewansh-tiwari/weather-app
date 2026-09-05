@@ -138,7 +138,21 @@ const App = (() => {
 
     if (r.settingSoundVolume) {
       r.settingSoundVolume.addEventListener('input', (e) => {
-        if (r.settingVolumeValue) r.settingVolumeValue.textContent = `${e.target.value}%`;
+        const valPct = Number(e.target.value);
+        if (r.settingVolumeValue) r.settingVolumeValue.textContent = `${valPct}%`;
+        const normVol = Math.max(0, Math.min(1, valPct / 100));
+        AudioEngine.setVolume(normVol);
+      });
+    }
+
+    if (r.settingToggleSound) {
+      r.settingToggleSound.addEventListener('change', (e) => {
+        const isEnabled = e.target.checked;
+        AudioEngine.setMuted(!isEnabled);
+        UI.updateSoundButtonState(isEnabled);
+        if (isEnabled && state.currentData) {
+          AudioEngine.playWeatherSound(state.currentData.current.condition, state.currentData.current.isDay);
+        }
       });
     }
 
